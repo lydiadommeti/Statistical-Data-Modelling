@@ -1,0 +1,538 @@
+---
+title: "Data Modelling, Clustering and Association Analysis"
+output:
+  html_notebook: default
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+---
+
+Exploratory Datat Analysis 
+
+Exploratory Data Analysis for the attached 'HR_comma_sep.csv' dataset. The dataset contains 14,999 obeservations (data samples) described by 10 features/variables (8 numerical variables and 2 categorical variables).
+
+```{r}
+install.packages("gdata")#This package is used for Various R Programming tools for Data manipulation
+```
+
+```{r}
+library(gdata)   
+data = read.csv("HR_comma_sep.csv")
+```
+
+```{r}
+head(data)
+```
+
+1. Missing values
+
+```{r}
+# start your answers here:
+# To identify missing values using is.na() which returns a logical vector with TRUE in the element location that contain missing values represented by NA
+
+is.na(data) # identifying NA's in full data frame
+which(is.na(data)) # The which() function returns the positions with missing values in the vector 
+# integer(0) means there are no elements of the data frame that satisfy the condition
+complete.cases(data) # Checking the whole data frame for missing values
+# TRUE indicates a complete row, i.e., no missing value
+# list rows of data that have missing values
+data[!complete.cases(data),]# shows 0 row that have missing values
+```
+
+2. Individual feature inspection. Providing descriptive statistics of each feature (variable) including count, mean, stdandard deviation, min-value, max-value, the first and third quartile, etc. 
+
+
+```{r}
+# start your answers here:
+
+summary(data) # summary gives the values of mean, min-value, max-value, the first and third quartile of all numerical columns at once
+count(data, vars = NULL, wt_var = NULL) # count refers to number of occurences
+# data : data frame to be processed
+# vars refers to variables to count unique values of
+# wt_var refers to optional variable to weight by-if this is non-NULL, count will sum up the value of this variable..
+```
+
+```{r}
+install.packages(dplyr)
+library(dplyr)
+install.packages("ggplot2")
+library(ggplot2)
+install.packages("fBasics") # installing fBasics packages
+library(fBasics)
+
+new_data <- data[sapply(data,is.numeric)]
+# extracting numeric columns from the data and creating new data frame with all numeric columns
+# this is another wayt to extract numeric columns - data %>% select_if(is.numeric) -> new_data
+head(new_data)
+```
+
+
+```{r}
+basicStats(new_data) # applying basicstats to the new_data(containing all numeric columns) to get mean, min-value, max-value, the first and third quartile
+```
+
+```{r}
+# Calculating the standard deviation of all numeric columns and ignoring NA values
+sapply(new_data, sd, na.rm = TRUE)
+```
+
+3. Individual feature visualization. Visualisation of feature (variable) distributions is the key to understanding a data set.
+
+```{r}
+# start your answers here:
+hist(data$satisfaction_level, prob=T) # Histogram of satisfaction_level
+
+# Histogram is popular graphical representation of the distribution of numerical data
+# According to the Histogram visualisation distribution , most of the Employees satisfaction_level is very consistent
+```
+```{r}
+hist(data$last_evaluation, prob=T)
+
+# Most of the Employees having regular Evaluation process in their work
+```
+
+```{r}
+hist(data$number_project, prob=T)
+
+# According to this visualisation, maximum number(7) of projects Employees handling are very few, 
+# where as most of the Employees are dealing 3,4 projects
+```
+
+```{r}
+hist(data$average_montly_hours, prob=T)
+
+# Maximum number of Employees getting 150 hrs as average-montly-hours
+```
+
+```{r}
+hist(data$time_spend_company, prob=T)
+
+# Maximum number of Employees spending 3hrs in the company
+# Minimum number of Employees spending between 6 to 10 hrs in the company
+```
+
+```{r}
+hist(data$Work_accident, prob=T)
+
+# According to the visualization graph work environment in the company is very safe as 0 accidents occurred
+# There is only one case of work-accident in the company
+```
+
+```{r}
+hist(data$left, prob=T)
+
+# Maximum number of Employees left in the company is 0, only few people left the company
+```
+
+```{r}
+hist(data$promotion_last_5years, prob=T)
+
+# According to the visualization there is no promotion in last 5years, only one Employee got promotion 
+```
+
+```{r}
+pie(table(data$Department)) # pie chart is good for graphical representation for categorical variables
+# According to this pie chart, Management department has the minimum number of Employees where as Sales Department has the maximum
+```
+
+```{r}
+barplot(table(data$salary)) # bar plot is mainly used for categorical attributes
+# Maximum number of the Employees receiving low salary, next medium level then very few number of Employees are in high salary level
+```
+
+4. Correlation Analysis. Calculating the mutual correlation coefficients of 
+(satisfaction_level,
+last_evaluation,
+number_project,
+average_montly_hours,
+time_spend_company,
+Work_accident,
+promotion_last_5years,
+salary) 
+
+```{r}
+# start your answers here:
+
+install.packages("dplyr")
+library(dplyr)
+```
+
+```{r}
+# A simplified format is cor(x,use=,method=)
+# x : numeric matrix or a data frame
+# use : spaecifies the handling of missing data
+# method : indicates the correlation coefficient to be computed. Options are pearson, spearman or kendall
+
+cor(new_data, use="complete.obs", method="kendall") # calculating Correlation coefficient using the method kendall
+# complete.obs refers to listwise deletion
+#The correlation coefficient of two variables in a data set equals to their covariance divided by the product of their individual standard deviations. It is a normalized measurement of how the two are linearly related.
+  
+```
+
+5. Boxplot or density plots. 
+
+
+
+```{r}
+# start your answers here:
+install.packages("sm")
+library(sm)
+```
+
+
+```{r}
+#Density plot visulizes the distribution of data over a continuous interval or time period.
+#Comparing the number of Employees left basing on satisfaction-level
+#xlab refers to X-axis label
+sm.density.compare(data$satisfaction_level, data$last_evaluation, xlab="employees_left")
+title(main="Number of Employees left basing on satisfaction_level")
+```
+
+
+```{r}
+#Comparing the number of Employees left basing on the number of projects they have assigned
+sm.density.compare(data$number_project, data$time_spend_company, xlab="employees_left")
+                   
+title(main="Number of Employees left basing on number_project")
+# Based on the graph it shows when the number of projects less the more employees left
+```
+
+
+```{r}
+sm.density.compare(data$average_montly_hours, data$Work_accident, xlab="employees_left")
+                   
+title(main="Number of Employees left basing on average_montly_hours")
+#Based on the graph the number of employees left even if the hours less or more
+```
+
+## Clustering 
+
+Clustering analysis on the wine data sets with three different clustering methods: K-means, K-medoids, and DBSCAN. 
+
+The `wine` data contain the results of a chemical analysis of wines grown in the same region in Italy but derived from three different cultivars. The analysis determined the quantities of 13 constituents found in each of the three types of wines, as listed below:
+
+1) Alcohol
+2) Malic acid
+3) Ash
+4) Alcalinity of ash
+5) Magnesium
+6) Total phenols
+7) Flavanoids
+8) Nonflavanoid phenols
+9) Proanthocyanins
+10) Color intensity
+11) Hue
+12) OD280/OD315 of diluted wines
+13) Proline
+
+
+```{r}
+wine.fl <- "http://archive.ics.uci.edu/ml/machine-learning-databases/wine/wine.data"
+wine <- read.csv(wine.fl,header = F)
+# Names of the variables
+wine.names=c("Alcohol", "Malic acid", "Ash", "Alcalinity of ash", "Magnesium",
+"Total phenols", "Flavanoids", "Nonflavanoid phenols", "Proanthocyanins",
+"Color intensity", "Hue", "OD280/OD315 of diluted wines", "Proline")
+colnames(wine)[2:14]=wine.names
+colnames(wine)[1]="Class"
+```
+
+```{r}
+head(wine)
+```
+
+
+1. Implementing the clustering analysis on the 'wine' data set using k-means. 
+
+```{r}
+# start your answers here:
+wine1 <- wine # creating a copy of wine data set and applying clustering on this new data set
+
+kmeans.result <- kmeans(wine1, 3) # apply k-means on wine1 data set with k = 3
+
+```
+
+
+```{r}
+#The k-means clustering results can be displyed as follows. We obtained three clusters with 47,62, 69 data samples respectively. The centers of the clusters are shown in the 'Cluster means' table. The 'Cluster Vector' shows the cluster number of each data sample. The 'Within cluster sum of squares' presents the quality of the clusters, the lower the better. The 'Available components' list the available information about the obtained cluster. 
+kmeans.result # display k-means results
+# we obtained three clusters with 47, 62, 69
+```
+
+2. For k-medioids clustering, we can use functions `pam()` and `pamk()`. Implement k-medioids clusterin using function `pam()` with the k value selected from the above. 
+
+```{r}
+# start your answers here:
+library(cluster)
+
+```
+
+```{r}
+pam.result <- pam(wine1, 3) # k-medioids clustering using function pam()
+pam.result # Three clusters with 48, 62 and 68 data samples are obtained but cluster one and three are different to k-means result by one data each
+```
+
+```{r}
+pam.result$clusinfo # display k-medoids results using pam()
+```
+
+```{r}
+library(fpc)
+```
+
+```{r}
+# Function pamk() is an enhanced version of pam() function, which does not need to provide value for k
+# It can automatically pick an estimated k value by the optimum average silhouette width
+pamk.result <- pamk(wine1)
+```
+
+```{r}
+pamk.result # display the clustering results obtained by k-medoids
+# There are only two clusters obtained by function pamk(). 
+```
+```{r}
+plot(pamk.result$pamobject)
+# In the plot showing clusters, we have two clusters not so well separated and point variability is 57.38%
+# The silhouette(si) plot shows the silhouettes of these two clusters. si is key variable here. If si is close to 1 it means the data samples are well clustered; if si is close to 0, it means the data samples lie between two clusters. We have 0.54 and 0.71 for these two clusters, so the results from function pamk() suggest two clusters, not so well separate the data samples in this case.
+```
+
+
+3. Implement DBSCAN clustering on the wine data. 
+
+```{r}
+# start your answers here:
+#Q1 What is your plan to determine the best value for these arguments ?
+wine2<- wine # copying data to wine2
+#installing packages fpc and dbscan
+library(fpc) 
+library(dbscan)
+# The belo command is used to install factoextra
+if(!require(devtools))install.packages("devtools")
+devtools::install_github("kassambara/factoextra")
+
+#Obtaining optima eps value by using K nearest neighboru to visually see the eps value knee as 60
+kNNdistplot(wine2,k=4)
+
+#Density-based clsutering with fpc & dbscan
+#set.seed(123)
+#f<-fpc::dbscan(wine2,eps=60,MinPts = 10) - this is another way to do using dbscan in fpc
+db<- dbscan::dbscan(wine2,60,10)
+db
+# With eps=60 and MinPts = 10 the noise was 8 , with MinPts=15 eps=60 noise was 26, with MinPts=15 eps=50 noise was 47 and with MinPts=10 eps=50 noise was 13 so the ideal values
+# are eps=60, MinPts =10. 
+
+#paclages to plot
+library(cluster)
+library("factoextra")
+library("ggplot2")
+fviz_cluster(db,wine2,gem="point")
+#Q2:Based on the clustering results you have from the above two questions , what values could you give a similar clustering result using DbSCAN
+#The values used with dbscan are eps = 60 and minPts = 10
+#the similare clustering result is observed with  MinPts=10 eps=50 noise was 13
+# We have 3 clusters with 27, 130 ,13 data points and the cluster are not seperate
+```
+
+## Association Rule Mining
+
+Association rule analysis on the retail data in the *retail.csv*. The data contain 1,000 transactions. Each transaction has eight variables:
+
+1. Customer Card Number
+2. Bill Amount
+3. Payment Methods
+4. Gender
+5. Tenant
+6. Income
+7. Age
+8. Items purchased including Fruits & vegetables, Meat, Milk products, Canned vegetables, Canned meat, Frozen goods, Beer, Wine, Soda drinks, Fish, and Textile
+
+```{r}
+# Required packages are loaded here for you to use. Install the package if any of them is missing from your R library.
+library(Matrix)
+library(arules)
+library(arulesViz)
+
+```
+
+```{r}
+install.packages("Matrix")
+library(Matrix)
+```
+
+
+```{r}
+data <- read.csv("retail.csv",header = TRUE, sep = ",", dec = ".")
+```
+
+```{r}
+head(data)
+```
+
+Answer the following questions by applying association rule mining: 
+
+1. Set of items that are purchased together frequently.
+
+```{r}
+# start your answers here:
+data1<- data
+data_ex <-data1[-c(1:7)]# remove columns from index 1 to 7
+data_ex[data_ex=="No"] <-NA #Substitute NA for No
+head(data_ex)
+```
+
+
+```{r}
+# Frequent itemsets: Item-sets whose support is greater or equal than minimum support threshold(min_sup)
+# Finding the frequent 1-itemsets with minimum support to 0.05, minlen = 1 and maxlen = 1 
+# The parameter target is frequent itemsets
+# 1-itemset refers to a k-item-set containing one item in this scenario
+# minlen refers to the minimum number of items required in the rule
+
+itemsets <- apriori(data_ex, parameter = list(minlen=1, support=0.05, target="frequent itemsets"))
+summary(itemsets)
+plot(itemsets, method="graph")
+# Summary shows that the support of 1-itemsets ranges from 0.05 to 0.8
+# The maximum support of 1-itemset is 0.8
+# Summary shows Set of 121689 itemsets are formed, out of them the Most feequent 1-itemsets are Soda.drink, Milk.products, Meat, Canned.meat, Textile....
+# all the 1-itemsets having at least a support of 0.5                                           
+                                         
+```
+
+
+```{r}
+# Finding the frequent 2-itemsets with minimum support to 0.05, minlen = 2 and maxlen = 5
+# minlen refers to the minimum number of items required in the rule
+# maxlen refers to the maximum number of items that can be present in the rule
+itemsets <- apriori(data_ex, parameter = list(minlen=2, maxlen=5, support=0.05, target="frequent itemsets"))
+summary(itemsets)
+plot(itemsets, method="graph")
+# Summary shows that the support of 2-itemsets ranges from 0.05 to 0.6
+# The maximum support of 2-itemset is 0.6
+# Summary shows that Set of 59469 itemsets are formed, out of them the Most frequent items are Milk.products, Meat, Soda.drinks, canned.meat, textile 
+
+```
+```{r}
+# Finding the frequent 3-itemsets with minimum support to 0.05, minlen = 3 and maxlen = 5
+# minlen refers to the minimum number of items required in the rule
+# maxlen refers to the maximum number of items that can be present in the rule
+itemsets <- apriori(data_ex, parameter = list(minlen=3, maxlen=5, support=0.05, target="frequent itemsets"))
+summary(itemsets)
+plot(itemsets, method="graph")
+# Summary shows that the support of 3-itemsets ranges from 0.05 to 0.55
+# The maximum support of 3-itemset is 0.5
+# Summary shows Set of 58694 itemsets are formed, out of them the Most frequent items are Milk.products, Meat, soda.drinks, canned.meat, Textile
+```
+
+```{r}
+# Finding the frequent 4-itemsets with minimum support to 0.05, minlen = 4 and maxlen = 5
+itemsets <- apriori(data_ex, parameter = list(minlen=4, maxlen=5, support=0.05, target="frequent itemsets"))
+summary(itemsets)
+
+# The absolute minimum support count is 500, which indicates the frequency of occurrence of an item-set
+# Summary shows Set of 0 itemsets are formed
+```
+
+
+2. Different purchase behaviors between male and female customers. 
+
+```{r}
+# start your answers here:
+data2<- data
+str(data2)
+data2_ex <-data2[-c(1:2,5:7)]#removing the columns that are not needed for this question
+head(data2_ex)
+data2_ex[data2_ex=="No"] <-NA # substituting No with NA value
+head(data2_ex)
+```
+
+
+```{r}
+# Generating strong association rules basing on specific interest
+#choosing lhs side as male customers to show the different purchase behaviors
+# minlen refers to the minimum number of items required in the rule
+install.packages("arules")
+library(arules)
+library(arulesViz)
+
+male <- apriori(data2_ex, parameter = list(minlen=2, supp = 0.05, confidence = 0.2), 
+        appearance = list(lhs=c("Gender=M"), default="rhs"))
+
+inspect(male)
+plot(male, method="graph")
+
+# Displaying  rows of the data frame
+# We obtained 34 strong association rules based on the minimum support=0.05, minimum confidence=0.2
+# After generating strong association rules, we can see the different purchase behavior between Male and Female
+```
+
+```{r}
+# Generating strong association rules basing on specific interest
+#choosing lhs side as female customers to show the different purchase behaviors
+# minlen refers to the minimum number of items required in the rule
+female <- apriori(data2_ex, parameter = list(minlen=2, supp = 0.05, confidence = 0.2), 
+        appearance = list(lhs=c("Gender=F"), default="rhs")) 
+
+inspect(female) # Displaying 10 rows of the data frame
+plot(female, method="graph")
+plot(male, method="graph")
+# We obtained 10 strong association rules based on the minimum support=0.05, minimum confidence=0.2
+# Beer consumption is more with males and wine consumption is more with female. Both of them using both cards and cash without much difference. Female spend more on textile.Male consume more canned vegetables 
+```
+
+
+3. Allocating the customer into 3 groups, [16, 27], [28, 38], [39, 50], and generate strong association rules to show the different purchase behaviors among the age groups. 
+
+```{r}
+# start your answers here:
+discretizeDF(data$Age, methods = NULL, default = NULL)
+# discretize convert a continuous variable into a categorical variable
+data_new <- data[-c(1:2,4:6)] # Excluding the irrelevant columns in the data frame
+data_new[data_new=="No"] <- NA # Replacing No values with NA to avoid them appearing in the rules
+head(data_new)
+
+```
+
+
+```{r}
+
+data_new1 <- data_new[c(2,1,3:13)]#Moving Age column to first position to display rhs side as default
+head(data_new1) # Displaying the new data frame with the 1st and 2nd columns changed positions
+
+rules_data_new1 <- apriori(data_new1, parameter = list(minlen=2, supp = 0.05, confidence = 0.2), 
+        appearance = list(lhs=c("Age=[16,26)"), default="rhs")) 
+# We obtained 12 strong association rules based on the minimum support=0.05, minimum confidence=0.2
+# The purchasing behavior of age group 16-26 is as follows
+# The payment method is mostly by card, and the frequent items are Fish, Fruits...vegetables, beer etc.
+
+inspect(head(rules_data_new1, 10))
+# 
+plot(rules_data_new1, method="graph")
+# According to the graph the most frequent items in this age group are Milk.products, Fish
+```
+
+
+```{r}
+rules_data_new1 <- apriori(data_new1, parameter = list(minlen=2, supp = 0.05, confidence = 0.2), 
+        appearance = list(lhs=c("Age=[26,39)"), default="rhs"))
+# We obtained 9 strong association rules based on the minimum support=0.05, minimum confidence=0.2
+#  The purchasing behavior of age group 26-39 is as follows
+# The payment method is both card and cash and the frequent items are Canned.vegetables, frozen.goods, Wine, Beer etc.
+inspect(head(rules_data_new1, 10))
+plot(rules_data_new1, method="graph")
+
+```
+
+```{r}
+rules_data_new1 <- apriori(data_new1, parameter = list(minlen=2, supp = 0.05, confidence = 0.2), 
+        appearance = list(lhs=c("Age=[39,50]"), default="rhs"))
+# We obtained 8 strong association rules based on the minimum support=0.05, minimum confidence=0.2
+# The purchasing behavior of age group 39-50 is as follows
+# The payment method is mostly by card and cash as well, the frequent items are Frozen.goods, Wine, Beer etc.
+inspect(head(rules_data_new1, 10))
+plot(rules_data_new1, method="graph")
+```
+
+
+
+
+
